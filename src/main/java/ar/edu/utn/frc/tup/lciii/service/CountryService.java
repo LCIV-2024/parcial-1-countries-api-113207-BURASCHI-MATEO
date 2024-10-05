@@ -16,13 +16,26 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CountryService {
 
-        private final CountryRepository countryRepository;
+        @Autowired
+        private CountryRepository countryRepository;
 
         @Autowired
         private RestTemplate restTemplate;
 
-        public List<CountryDTO> getAllCountries() {
+        public List<CountryDTO> getAllCountries(String name, String code) {
                 String url = "https://restcountries.com/v3.1/all";
+                if (name != null) {
+                        url = "https://restcountries.com/v3.1/name/" + name;
+                } else if (code != null) {
+                        url = "https://restcountries.com/v3.1/alpha/" + code.toUpperCase();
+                }
+                List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
+                return response.stream().map(this::mapToCountry).collect(Collectors.toList())
+                        .stream().map(this::mapToDTO).collect(Collectors.toList());
+        }
+
+        public List<CountryDTO> getCountriesByContinent(String continent) {
+                String url = "https://restcountries.com/v3.1/region/" + continent;
                 List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
                 return response.stream().map(this::mapToCountry).collect(Collectors.toList())
                         .stream().map(this::mapToDTO).collect(Collectors.toList());
@@ -36,10 +49,12 @@ public class CountryService {
                 Map<String, Object> nameData = (Map<String, Object>) countryData.get("name");
                 return Country.builder()
                         .name((String) nameData.get("common"))
+                        .code((String) countryData.get("cca3"))
                         .population(((Number) countryData.get("population")).longValue())
                         .area(((Number) countryData.get("area")).doubleValue())
                         .region((String) countryData.get("region"))
                         .languages((Map<String, String>) countryData.get("languages"))
+                        .borders((List<String>) countryData.get("borders"))
                         .build();
         }
 
