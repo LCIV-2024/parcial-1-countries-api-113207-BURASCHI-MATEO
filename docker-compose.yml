@@ -1,0 +1,14 @@
+services:
+  api-service:
+    container_name: api-countries
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - parcial
+    restart: on-failure
+
+networks:
+  parcial:
