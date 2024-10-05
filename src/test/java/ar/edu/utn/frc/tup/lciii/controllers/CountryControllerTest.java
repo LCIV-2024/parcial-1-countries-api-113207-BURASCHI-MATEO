@@ -40,8 +40,6 @@ public class CountryControllerTest {
     private MockMvc mvc;
     @MockBean
     private CountryService countryService;
-    @MockBean
-    private RestTemplate restTemplate;
 
     @Test
     @DisplayName("01 get all countries ok")
@@ -91,19 +89,13 @@ public class CountryControllerTest {
     void saveCountriesOk() throws Exception {
         RequestPost requestPost = new RequestPost();
         requestPost.setAmountOfCountryToSave(10);
-        String url = "https://restcountries.com/v3.1/all";
-        Map<String, Object> objectResponse = new HashMap<>();
-        objectResponse.put("name", "Argentina");
-        objectResponse.put("cca3", "ARG");
-        List<Map<String, Object>> apiResponse = List.of(objectResponse);
 
-        when(restTemplate.getForObject(url, List.class)).thenReturn(apiResponse);
-        when(countryService.saveCountries(requestPost)).thenReturn(List.of(new CountryDTO()));
+        given(countryService.saveCountries(requestPost)).willReturn(List.of(new CountryDTO()));
 
         mvc.perform(post("/api/countries")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"amountOfCountryToSave\": 10}"))
-                .andExpect(status().isCreated());
+                .andExpect(status().isOk());
     }
 
 }
