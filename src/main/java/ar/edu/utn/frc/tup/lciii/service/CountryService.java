@@ -1,8 +1,10 @@
 package ar.edu.utn.frc.tup.lciii.service;
 
+import ar.edu.utn.frc.tup.lciii.dtos.common.CountryDTO;
 import ar.edu.utn.frc.tup.lciii.model.Country;
 import ar.edu.utn.frc.tup.lciii.repository.CountryRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,12 +18,14 @@ public class CountryService {
 
         private final CountryRepository countryRepository;
 
-        private final RestTemplate restTemplate;
+        @Autowired
+        private RestTemplate restTemplate;
 
-        public List<Country> getAllCountries() {
+        public List<CountryDTO> getAllCountries() {
                 String url = "https://restcountries.com/v3.1/all";
                 List<Map<String, Object>> response = restTemplate.getForObject(url, List.class);
-                return response.stream().map(this::mapToCountry).collect(Collectors.toList());
+                return response.stream().map(this::mapToCountry).collect(Collectors.toList())
+                        .stream().map(this::mapToDTO).collect(Collectors.toList());
         }
 
         /**
